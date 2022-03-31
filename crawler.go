@@ -1,15 +1,82 @@
 package main
 
+import (
+	"fmt"
+	"log"
+	"strings"
+
+	"github.com/gocolly/colly"
+)
+
 type Crawler struct {
-	users  []*User
 	mangas []*Manga
 }
 
-func NewCrawler(uarr []*User, marr []*Manga) *Crawler {
+func NewCrawler(marr []*Manga) *Crawler {
 	return &Crawler{
-		users:  uarr,
 		mangas: marr,
 	}
+}
+
+func (c *Crawler) Crawl(service *NotifangaService) []*User {
+	// if err := godotenv.Load(".env"); err != nil {
+	// 	log.Println(err)
+	// }
+	// dbconn, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	// if err != nil {
+	// 	log.Println("cannot get connection with db", err)
+	// }
+	// defer dbconn.Close()
+	// repo, err := NewRepository(dbconn)
+	// if err != nil {
+	// 	log.Println("cannot create repository", err)
+	// }
+	// service := NewNotifangaService(repo)
+
+	collector := colly.NewCollector(
+		colly.AllowedDomains("mangalib.me"),
+	)
+	rssCollector := collector.Clone()
+
+	var uarr []*User
+
+	// go func() {
+	marr, err := service.GetAllMangas()
+	if err != nil {
+		log.Println("cant get all mangas", err)
+	}
+
+	for i, m := range marr {
+		collector.OnHTML("div.media-sidebar-actions a", func(el *colly.HTMLElement) {
+			rssLink := el.Attr("href")
+
+			fmt.Println(rssLink)
+
+			if strings.Contains(rssLink, "mangalib.me/manga-rss") {
+				rssCollector.Visit(rssLink)
+			}
+
+			rssCollector.OnXML("rss/channel/item[1]", func(el *colly.XMLElement) {
+				newChapter := el.Attr("title")
+				newChapterLink := el.Attr("link")
+				if newChapter != m.LastChapter {
+					marr[i].LastChapter = newChapter
+					marr[i].LastChapterUrl = newChapterLink
+					service.UpdateManga(*marr[i])
+
+					uarr, err = service.ListMangaUsers(*marr[i])
+					if err != nil {
+						log.Println("cant use ListMangaUsers", err)
+					}
+				}
+			})
+
+			collector.Visit(m.Url)
+		})
+	}
+	// }()
+
+	return uarr
 }
 
 // func (c *Crawler) Crawl() {
