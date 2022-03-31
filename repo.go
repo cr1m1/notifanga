@@ -7,20 +7,20 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Repo struct {
+type notifangaRepository struct {
 	conn *sql.DB
 }
 
-func NewRepository(conn *sql.DB) *Repo {
-	return &Repo{
-		conn: conn,
-	}
+func NewRepository(db *sql.DB) (*notifangaRepository, error) {
+	return &notifangaRepository{
+		conn: db,
+	}, nil
 }
 
 // checks does user exists or not
 // if exists returns user's id
 // if not exists creates user and returns user's id
-func (r *Repo) UserCreate(u User) (User, error) {
+func (r *notifangaRepository) UserCreate(u User) (User, error) {
 	err := r.conn.QueryRow(`
 		WITH s AS (
     		SELECT id, telegram_user_id
@@ -41,7 +41,7 @@ func (r *Repo) UserCreate(u User) (User, error) {
 	return u, err
 }
 
-func (r *Repo) UserList() ([]*User, error) {
+func (r *notifangaRepository) UserList() ([]*User, error) {
 	rows, err := r.conn.Query(`
 		SELECT id, telegram_user_id
 		FROM users;
@@ -73,7 +73,7 @@ func (r *Repo) UserList() ([]*User, error) {
 // checks does manga exists or not
 // if exists returns manga's id
 // if not exists creates manga and returns manga's id
-func (r *Repo) MangaCreate(m Manga) (Manga, error) {
+func (r *notifangaRepository) MangaCreate(m Manga) (Manga, error) {
 	err := r.conn.QueryRow(`
 		WITH s AS (
     		SELECT id, name
@@ -94,7 +94,7 @@ func (r *Repo) MangaCreate(m Manga) (Manga, error) {
 	return m, err
 }
 
-func (r *Repo) MangaList(u User) (map[int]*Manga, error) {
+func (r *notifangaRepository) MangaList(u User) (map[int]*Manga, error) {
 	rows, err := r.conn.Query(`
 		SELECT id, link, last_chapter, last_chapter_url
 		FROM users_mangas
@@ -131,7 +131,7 @@ func (r *Repo) MangaList(u User) (map[int]*Manga, error) {
 	return mangas, err
 }
 
-func (r *Repo) UserListByManga(m Manga) ([]*User, error) {
+func (r *notifangaRepository) UserListByManga(m Manga) ([]*User, error) {
 	rows, err := r.conn.Query(`
 		SELECT id, telegram_user_id
 		FROM users_mangas
@@ -163,7 +163,7 @@ func (r *Repo) UserListByManga(m Manga) ([]*User, error) {
 	return uarr, err
 }
 
-func (r *Repo) UpdateManga(m Manga) error {
+func (r *notifangaRepository) UpdateManga(m Manga) error {
 	err := r.conn.QueryRow(`
 		UPDATE mangas
 		SET last_chapter = $1,
@@ -173,7 +173,7 @@ func (r *Repo) UpdateManga(m Manga) error {
 	return err
 }
 
-func (r *Repo) AddMangaToUser(m Manga, u User) error {
+func (r *notifangaRepository) AddMangaToUser(m Manga, u User) error {
 	err := r.conn.QueryRow(`
 		INSERT INTO users_mangas (user_id, manga_id)
 		VALUES ($1, $2);
@@ -181,7 +181,7 @@ func (r *Repo) AddMangaToUser(m Manga, u User) error {
 	return err
 }
 
-func (r *Repo) DeleteMangaFromUser(m Manga, u User) error {
+func (r *notifangaRepository) DeleteMangaFromUser(m Manga, u User) error {
 	err := r.conn.QueryRow(`
 		DELETE 
 		FROM users_mangas

@@ -9,7 +9,7 @@ type NotifangaRepository interface {
 	UserCreate(u User) (User, error)
 	UserList() ([]*User, error)
 	MangaCreate(m Manga) (Manga, error)
-	MangaList(userId int) (map[int]*Manga, error)
+	MangaList(u User) (map[int]*Manga, error)
 	UserListByManga(m Manga) ([]*User, error)
 	UpdateManga(m Manga) error
 	AddMangaToUser(m Manga, u User) error
@@ -54,7 +54,7 @@ func (s *NotifangaService) CreateManga(m Manga) (Manga, error) {
 
 // gets list of mangas of a user
 func (s *NotifangaService) ListUserMangas(u User) (map[int]*Manga, error) {
-	m, err := s.repo.MangaList(u.ID)
+	m, err := s.repo.MangaList(u)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -96,24 +96,24 @@ func (s *NotifangaService) RemoveMangaFromUser(m Manga, u User) error {
 	return nil
 }
 
-func (s *NotifangaService) GetAllData(userId int) ([]*User, []*Manga, error) {
+func (s *NotifangaService) GetAllMangas() ([]*Manga, error) {
 	uarr, err := s.repo.UserList()
 	if err != nil {
 		log.Println(err)
-		return nil, nil, err
+		return nil, err
 	}
 	var marr []*Manga
 	for _, u := range uarr {
-		mmap, err := s.repo.MangaList(u.ID)
+		mmap, err := s.repo.MangaList(*u)
 		if err != nil {
 			log.Println(err)
-			return nil, nil, err
+			return nil, err
 		}
 		for _, m := range mmap {
 			marr = append(marr, m)
 		}
 	}
-	return uarr, marr, nil
+	return marr, nil
 }
 
 // func extractChapter(s string) string {
