@@ -9,6 +9,7 @@ import (
 )
 
 func Crawl(m Manga, service *NotifangaService) []*User {
+	log.Println("crawler started")
 	collector := colly.NewCollector(
 		colly.AllowedDomains("mangalib.me"),
 	)
@@ -24,6 +25,7 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 	// }
 
 	collector.OnHTML("div.media-sidebar-actions a", func(el *colly.HTMLElement) {
+		log.Println("onHTML started")
 		rssLink := el.Attr("href")
 
 		fmt.Println(rssLink)
@@ -33,9 +35,11 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 		}
 
 		rssCollector.OnXML("rss/channel/item[1]", func(el *colly.XMLElement) {
+			log.Println("onXML started")
 			newChapter := el.Attr("title")
 			newChapterLink := el.Attr("link")
 			if newChapter != m.LastChapter {
+				log.Println("new chapter")
 				isReleased = true
 				m.LastChapter = newChapter
 				m.LastChapterUrl = newChapterLink
@@ -54,6 +58,19 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 		return uarr
 	}
 	return nil
+}
+
+func CrawlName(url string) string {
+	collector := colly.NewCollector(
+		colly.AllowedDomains("mangalib.me"),
+	)
+	name := ""
+	collector.OnHTML("div.media-name__main", func(el *colly.HTMLElement) {
+		name = el.Text
+	})
+	collector.Visit(url)
+
+	return name
 }
 
 // func (c *Crawler) Crawl() {

@@ -20,7 +20,7 @@ func NewRepository(db *sql.DB) (*notifangaRepository, error) {
 // checks does user exists or not
 // if exists returns user's id
 // if not exists creates user and returns user's id
-func (r *notifangaRepository) UserCreate(u User) (User, error) {
+func (r *notifangaRepository) UserCreate(u *User) (*User, error) {
 	err := r.conn.QueryRow(`
 		WITH s AS (
     		SELECT id, telegram_user_id
@@ -73,16 +73,16 @@ func (r *notifangaRepository) UserList() ([]*User, error) {
 // checks does manga exists or not
 // if exists returns manga's id
 // if not exists creates manga and returns manga's id
-func (r *notifangaRepository) MangaCreate(m Manga) (Manga, error) {
+func (r *notifangaRepository) MangaCreate(m *Manga) (*Manga, error) {
 	err := r.conn.QueryRow(`
 		WITH s AS (
     		SELECT id, name
     		FROM mangas
     		WHERE name = $1
 		), i AS (
-    		INSERT INTO mangas (name, link)
-    		SELECT $1 , $2
-    		WHERE NOT EXISTS (select 1 from s)
+    		INSERT INTO mangas (name, link, last_chapter, last_chapter_url)
+    		SELECT $1, $2, $3, $4
+    		WHERE NOT EXISTS (SELECT 1 FROM s)
     		RETURNING id
 		)
 		SELECT id
@@ -90,7 +90,7 @@ func (r *notifangaRepository) MangaCreate(m Manga) (Manga, error) {
 		UNION ALL
 		SELECT id
 		FROM s
-	`, m.Name, m.Url).Scan(&m.ID)
+	`, m.Name, m.Url, m.LastChapter, m.LastChapterUrl).Scan(&m.ID)
 	return m, err
 }
 
@@ -173,7 +173,7 @@ func (r *notifangaRepository) UpdateManga(m Manga) error {
 	return err
 }
 
-func (r *notifangaRepository) AddMangaToUser(m Manga, u User) error {
+func (r *notifangaRepository) AddMangaToUser(m *Manga, u *User) error {
 	err := r.conn.QueryRow(`
 		INSERT INTO users_mangas (user_id, manga_id)
 		VALUES ($1, $2);

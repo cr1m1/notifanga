@@ -6,13 +6,13 @@ import (
 )
 
 type NotifangaRepository interface {
-	UserCreate(u User) (User, error)
+	UserCreate(u *User) (*User, error)
 	UserList() ([]*User, error)
-	MangaCreate(m Manga) (Manga, error)
+	MangaCreate(m *Manga) (*Manga, error)
 	MangaList(u User) (map[int]*Manga, error)
 	UserListByManga(m Manga) ([]*User, error)
 	UpdateManga(m Manga) error
-	AddMangaToUser(m Manga, u User) error
+	AddMangaToUser(m *Manga, u *User) error
 	DeleteMangaFromUser(m Manga, u User) error
 }
 
@@ -26,11 +26,11 @@ func NewNotifangaService(r NotifangaRepository) *NotifangaService {
 	}
 }
 
-func (s *NotifangaService) CreateUser(u User) (User, error) {
+func (s *NotifangaService) CreateUser(u *User) (*User, error) {
 	u, err := s.repo.UserCreate(u)
 	if err != nil {
 		log.Println(err)
-		return User{}, err
+		return nil, err
 	}
 	return u, nil
 }
@@ -44,10 +44,11 @@ func (s *NotifangaService) GetUsers() ([]*User, error) {
 	return uarr, err
 }
 
-func (s *NotifangaService) CreateManga(m Manga) (Manga, error) {
+func (s *NotifangaService) CreateManga(m *Manga) (*Manga, error) {
 	m, err := s.repo.MangaCreate(m)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 	return m, nil
 }
@@ -79,7 +80,7 @@ func (s *NotifangaService) UpdateManga(m Manga) error {
 	return nil
 }
 
-func (s *NotifangaService) AddMangaToUser(m Manga, u User) error {
+func (s *NotifangaService) AddMangaToUser(m *Manga, u *User) error {
 	if !strings.Contains(m.Url, "mangalib.me/") {
 		return ErrNotValidUrl
 	}
