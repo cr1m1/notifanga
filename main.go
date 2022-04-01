@@ -24,6 +24,7 @@ func main() {
 	}
 	service := NewNotifangaService(repo)
 
+	// user1
 	u := &User{
 		TelegramUserID: "telegram1",
 	}
@@ -67,7 +68,38 @@ func main() {
 		log.Println("cant add manga to user", err)
 	}
 
+	// user2
+	u = &User{
+		TelegramUserID: "telegram2",
+	}
+	u, err = service.CreateUser(u)
+	if err != nil {
+		log.Println("cant create a user", err)
+	}
+	log.Println("user was created", u)
+
+	m = &Manga{
+		Name:           CrawlName("https://mangalib.me/toukyou-revengers?section=info"),
+		Url:            "https://mangalib.me/toukyou-revengers?section=info",
+		LastChapter:    "",
+		LastChapterUrl: "",
+	}
+	log.Println("manga name", m.Name)
+	m, err = service.CreateManga(m)
+	if err != nil {
+		log.Println("cant create manga", err)
+	}
+	log.Println("manga was created", m)
+
+	if err := service.AddMangaToUser(m, u); err != nil {
+		log.Println("cant add manga to user", err)
+	}
+
+	// for {
 	marr, err := service.GetAllMangas()
+	for _, manga := range marr {
+		log.Println(manga)
+	}
 	if err != nil {
 		log.Println("cannot get all mangas", err)
 	}
@@ -76,8 +108,13 @@ func main() {
 		log.Println("loop started")
 		log.Println("manga list", m)
 		uarr := Crawl(*m, service)
+		for _, user := range uarr {
+			log.Println("user list", user)
+		}
 		for _, u := range uarr {
 			fmt.Println("new chapter!", u.TelegramUserID)
 		}
 	}
+	// time.Sleep(time.Minute * 1)
+	// }
 }

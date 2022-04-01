@@ -33,14 +33,17 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 		log.Println("onXML started")
 		newChapter := el.ChildText("item[1]/title")
 		newChapterLink := el.ChildText("item[1]/link")
-		if newChapter != m.LastChapter {
-			isReleased = true
-			ind := strings.Index(newChapter, "#")
-			if ind != -1 {
-				m.LastChapter = newChapter[ind+1:]
+		ind := strings.Index(newChapter, "#")
+		if ind != -1 {
+			newChapter = newChapter[ind+1:]
+			log.Println("new chapter", newChapter, newChapterLink)
+			log.Println("last chapter", m.LastChapter, m.LastChapterUrl)
+			if newChapter != m.LastChapter {
+				log.Println("NEW CHAPTER TRIGGERED")
+				isReleased = true
+				m.LastChapter = newChapter
 				m.LastChapterUrl = newChapterLink
 				service.UpdateManga(m)
-				log.Println("new chapter", m.LastChapter, m.LastChapterUrl)
 
 				uarr, err = service.ListMangaUsers(m)
 				if err != nil {
@@ -51,6 +54,8 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 	})
 	collector.Visit(m.Url)
 	if isReleased {
+		log.Println("isReleased", isReleased)
+		log.Println(uarr)
 		return uarr
 	}
 	return nil

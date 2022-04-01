@@ -77,6 +77,7 @@ func (s *NotifangaService) UpdateManga(m Manga) error {
 	if err := s.repo.UpdateManga(m); err != nil {
 		return err
 	}
+	log.Println("service update manga", m)
 	return nil
 }
 
