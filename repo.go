@@ -182,7 +182,7 @@ func (r *notifangaRepository) AddMangaToUser(m *Manga, u *User) error {
 	return err
 }
 
-func (r *notifangaRepository) DeleteMangaFromUser(m Manga, u User) error {
+func (r *notifangaRepository) DeleteMangaFromUser(m *Manga, u *User) error {
 	err := r.conn.QueryRow(`
 		DELETE 
 		FROM users_mangas

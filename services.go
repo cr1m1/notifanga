@@ -13,7 +13,7 @@ type NotifangaRepository interface {
 	UserListByManga(m Manga) ([]*User, error)
 	UpdateManga(m Manga) error
 	AddMangaToUser(m *Manga, u *User) error
-	DeleteMangaFromUser(m Manga, u User) error
+	DeleteMangaFromUser(m *Manga, u *User) error
 }
 
 type NotifangaService struct {
@@ -91,7 +91,7 @@ func (s *NotifangaService) AddMangaToUser(m *Manga, u *User) error {
 	return nil
 }
 
-func (s *NotifangaService) RemoveMangaFromUser(m Manga, u User) error {
+func (s *NotifangaService) RemoveMangaFromUser(m *Manga, u *User) error {
 	if err := s.repo.DeleteMangaFromUser(m, u); err != nil {
 		return err
 	}
