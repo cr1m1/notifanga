@@ -122,6 +122,7 @@ func (r *notifangaRepository) MangaList(u User) (map[int]*Manga, error) {
 			return nil, err
 		}
 		mangas[id] = &Manga{
+			ID:             id,
 			Name:           name,
 			Url:            link,
 			LastChapter:    lastChapter,
