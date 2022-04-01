@@ -177,7 +177,7 @@ func (r *notifangaRepository) AddMangaToUser(m *Manga, u *User) error {
 	err := r.conn.QueryRow(`
 		INSERT INTO users_mangas (user_id, manga_id)
 		VALUES ($1, $2);
-	`, m.ID, u.ID).Err()
+	`, u.ID, m.ID).Err()
 	return err
 }
 
