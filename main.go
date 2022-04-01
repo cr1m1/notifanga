@@ -67,6 +67,8 @@ func main() {
 	if err := service.AddMangaToUser(m, u); err != nil {
 		log.Println("cant add manga to user", err)
 	}
+	if err := service.RemoveMangaFromUser(m, u); err != nil {
+	}
 
 	// user2
 	u = &User{
@@ -117,4 +119,19 @@ func main() {
 	}
 	// time.Sleep(time.Minute * 1)
 	// }
+
+	users, err := service.GetUsers()
+	if err != nil {
+		log.Println("cant get list of all users", err)
+	}
+	log.Println("users:")
+	for _, u := range users {
+		log.Println(u)
+		mangas, err := service.ListUserMangas(*u)
+		if err != nil {
+		}
+		for _, m := range mangas {
+			log.Println(m)
+		}
+	}
 }
