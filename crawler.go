@@ -19,11 +19,6 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 	var err error
 	isReleased := false
 
-	// marr, err := service.GetAllMangas()
-	// if err != nil {
-	// 	log.Println("cant get all mangas", err)
-	// }
-
 	collector.OnHTML("div.media-sidebar-actions a", func(el *colly.HTMLElement) {
 		log.Println("onHTML started")
 		rssLink := el.Attr("href")
@@ -33,27 +28,28 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 		if strings.Contains(rssLink, "mangalib.me/manga-rss") {
 			rssCollector.Visit(rssLink)
 		}
-
-		rssCollector.OnXML("rss/channel/item[1]", func(el *colly.XMLElement) {
-			log.Println("onXML started")
-			newChapter := el.Attr("title")
-			newChapterLink := el.Attr("link")
-			if newChapter != m.LastChapter {
-				log.Println("new chapter")
-				isReleased = true
-				m.LastChapter = newChapter
+	})
+	rssCollector.OnXML("rss/channel", func(el *colly.XMLElement) {
+		log.Println("onXML started")
+		newChapter := el.ChildText("item[1]/title")
+		newChapterLink := el.ChildText("item[1]/link")
+		if newChapter != m.LastChapter {
+			isReleased = true
+			ind := strings.Index(newChapter, "#")
+			if ind != -1 {
+				m.LastChapter = newChapter[ind+1:]
 				m.LastChapterUrl = newChapterLink
 				service.UpdateManga(m)
+				log.Println("new chapter", m.LastChapter, m.LastChapterUrl)
 
 				uarr, err = service.ListMangaUsers(m)
 				if err != nil {
 					log.Println("cant use ListMangaUsers", err)
 				}
 			}
-		})
-
-		collector.Visit(m.Url)
+		}
 	})
+	collector.Visit(m.Url)
 	if isReleased {
 		return uarr
 	}
