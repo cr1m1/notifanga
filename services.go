@@ -9,7 +9,7 @@ type NotifangaRepository interface {
 	UserCreate(u *User) (*User, error)
 	UserList() ([]*User, error)
 	MangaCreate(m *Manga) (*Manga, error)
-	MangaList(u User) (map[int]*Manga, error)
+	MangaList(u User) ([]*Manga, error)
 	UserListByManga(m Manga) ([]*User, error)
 	UpdateManga(m Manga) error
 	AddMangaToUser(m *Manga, u *User) error
@@ -54,7 +54,7 @@ func (s *NotifangaService) CreateManga(m *Manga) (*Manga, error) {
 }
 
 // gets list of mangas of a user
-func (s *NotifangaService) ListUserMangas(u User) (map[int]*Manga, error) {
+func (s *NotifangaService) ListUserMangas(u User) ([]*Manga, error) {
 	m, err := s.repo.MangaList(u)
 	if err != nil {
 		log.Println(err)
@@ -105,14 +105,18 @@ func (s *NotifangaService) GetAllMangas() ([]*Manga, error) {
 		return nil, err
 	}
 	var marr []*Manga
+	allKeys := make(map[int]bool)
 	for _, u := range uarr {
-		mmap, err := s.repo.MangaList(*u)
+		mList, err := s.repo.MangaList(*u)
 		if err != nil {
 			log.Println(err)
 			return nil, err
 		}
-		for _, m := range mmap {
-			marr = append(marr, m)
+		for _, m := range mList {
+			if _, val := allKeys[m.ID]; !val {
+				allKeys[m.ID] = true
+				marr = append(marr, m)
+			}
 		}
 	}
 	return marr, nil

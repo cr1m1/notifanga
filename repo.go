@@ -94,7 +94,7 @@ func (r *notifangaRepository) MangaCreate(m *Manga) (*Manga, error) {
 	return m, err
 }
 
-func (r *notifangaRepository) MangaList(u User) (map[int]*Manga, error) {
+func (r *notifangaRepository) MangaList(u User) ([]*Manga, error) {
 	rows, err := r.conn.Query(`
 		SELECT id, name, link, last_chapter, last_chapter_url
 		FROM users_mangas
@@ -108,8 +108,8 @@ func (r *notifangaRepository) MangaList(u User) (map[int]*Manga, error) {
 	var (
 		id                                      int
 		name, link, lastChapter, lastChapterUrl string
+		marr                                    []*Manga
 	)
-	mangas := make(map[int]*Manga)
 
 	for rows.Next() {
 		if err := rows.Scan(
@@ -121,15 +121,15 @@ func (r *notifangaRepository) MangaList(u User) (map[int]*Manga, error) {
 		); err != nil {
 			return nil, err
 		}
-		mangas[id] = &Manga{
+		marr = append(marr, &Manga{
 			ID:             id,
 			Name:           name,
 			Url:            link,
 			LastChapter:    lastChapter,
 			LastChapterUrl: lastChapterUrl,
-		}
+		})
 	}
-	return mangas, err
+	return marr, err
 }
 
 func (r *notifangaRepository) UserListByManga(m Manga) ([]*User, error) {
