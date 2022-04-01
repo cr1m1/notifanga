@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -23,7 +22,7 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 		log.Println("onHTML started")
 		rssLink := el.Attr("href")
 
-		fmt.Println(rssLink)
+		log.Println(rssLink)
 
 		if strings.Contains(rssLink, "mangalib.me/manga-rss") {
 			rssCollector.Visit(rssLink)
