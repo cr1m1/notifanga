@@ -8,75 +8,52 @@ import (
 	"github.com/gocolly/colly"
 )
 
-type Crawler struct {
-	mangas []*Manga
-}
-
-func NewCrawler(marr []*Manga) *Crawler {
-	return &Crawler{
-		mangas: marr,
-	}
-}
-
-func (c *Crawler) Crawl(service *NotifangaService) []*User {
-	// if err := godotenv.Load(".env"); err != nil {
-	// 	log.Println(err)
-	// }
-	// dbconn, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	// if err != nil {
-	// 	log.Println("cannot get connection with db", err)
-	// }
-	// defer dbconn.Close()
-	// repo, err := NewRepository(dbconn)
-	// if err != nil {
-	// 	log.Println("cannot create repository", err)
-	// }
-	// service := NewNotifangaService(repo)
-
+func Crawl(m Manga, service *NotifangaService) []*User {
 	collector := colly.NewCollector(
 		colly.AllowedDomains("mangalib.me"),
 	)
 	rssCollector := collector.Clone()
 
 	var uarr []*User
+	var err error
+	isReleased := false
 
-	// go func() {
-	marr, err := service.GetAllMangas()
-	if err != nil {
-		log.Println("cant get all mangas", err)
-	}
+	// marr, err := service.GetAllMangas()
+	// if err != nil {
+	// 	log.Println("cant get all mangas", err)
+	// }
 
-	for i, m := range marr {
-		collector.OnHTML("div.media-sidebar-actions a", func(el *colly.HTMLElement) {
-			rssLink := el.Attr("href")
+	collector.OnHTML("div.media-sidebar-actions a", func(el *colly.HTMLElement) {
+		rssLink := el.Attr("href")
 
-			fmt.Println(rssLink)
+		fmt.Println(rssLink)
 
-			if strings.Contains(rssLink, "mangalib.me/manga-rss") {
-				rssCollector.Visit(rssLink)
-			}
+		if strings.Contains(rssLink, "mangalib.me/manga-rss") {
+			rssCollector.Visit(rssLink)
+		}
 
-			rssCollector.OnXML("rss/channel/item[1]", func(el *colly.XMLElement) {
-				newChapter := el.Attr("title")
-				newChapterLink := el.Attr("link")
-				if newChapter != m.LastChapter {
-					marr[i].LastChapter = newChapter
-					marr[i].LastChapterUrl = newChapterLink
-					service.UpdateManga(*marr[i])
+		rssCollector.OnXML("rss/channel/item[1]", func(el *colly.XMLElement) {
+			newChapter := el.Attr("title")
+			newChapterLink := el.Attr("link")
+			if newChapter != m.LastChapter {
+				isReleased = true
+				m.LastChapter = newChapter
+				m.LastChapterUrl = newChapterLink
+				service.UpdateManga(m)
 
-					uarr, err = service.ListMangaUsers(*marr[i])
-					if err != nil {
-						log.Println("cant use ListMangaUsers", err)
-					}
+				uarr, err = service.ListMangaUsers(m)
+				if err != nil {
+					log.Println("cant use ListMangaUsers", err)
 				}
-			})
-
-			collector.Visit(m.Url)
+			}
 		})
-	}
-	// }()
 
-	return uarr
+		collector.Visit(m.Url)
+	})
+	if isReleased {
+		return uarr
+	}
+	return nil
 }
 
 // func (c *Crawler) Crawl() {

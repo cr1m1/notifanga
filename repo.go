@@ -96,7 +96,7 @@ func (r *notifangaRepository) MangaCreate(m Manga) (Manga, error) {
 
 func (r *notifangaRepository) MangaList(u User) (map[int]*Manga, error) {
 	rows, err := r.conn.Query(`
-		SELECT id, link, last_chapter, last_chapter_url
+		SELECT id, name, link, last_chapter, last_chapter_url
 		FROM users_mangas
 		INNER JOIN mangas
 			ON manga_id = id
