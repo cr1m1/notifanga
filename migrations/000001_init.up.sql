@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
     id INT GENERATED ALWAYS AS IDENTITY UNIQUE,
-    telegram_user_id varchar(160) NOT NULL UNIQUE
+    telegram_user_id INT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS mangas (
