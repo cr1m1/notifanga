@@ -7,7 +7,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func Crawl(m Manga, service *NotifangaService) []*User {
+func Crawl(m Manga, service *NotifangaService) ([]*User, Manga) {
 	log.Println("crawler started")
 	collector := colly.NewCollector(
 		colly.AllowedDomains("mangalib.me"),
@@ -46,7 +46,7 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 
 				uarr, err = service.ListMangaUsers(m)
 				if err != nil {
-					log.Println("cant use ListMangaUsers", err)
+					// log.Println("cant use ListMangaUsers", err)
 				}
 			}
 		}
@@ -55,9 +55,9 @@ func Crawl(m Manga, service *NotifangaService) []*User {
 	if isReleased {
 		// log.Println("isReleased", isReleased)
 		// log.Println(uarr)
-		return uarr
+		return uarr, m
 	}
-	return nil
+	return nil, m
 }
 
 func CrawlName(url string) string {
