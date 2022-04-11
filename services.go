@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"strings"
 )
 
@@ -29,7 +28,6 @@ func NewNotifangaService(r NotifangaRepository) *NotifangaService {
 func (s *NotifangaService) CreateUser(u *User) (*User, error) {
 	u, err := s.repo.UserCreate(u)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	return u, nil
@@ -38,16 +36,17 @@ func (s *NotifangaService) CreateUser(u *User) (*User, error) {
 func (s *NotifangaService) GetUsers() ([]*User, error) {
 	uarr, err := s.repo.UserList()
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	return uarr, err
 }
 
 func (s *NotifangaService) CreateManga(m *Manga) (*Manga, error) {
+	if !strings.Contains(m.Url, "mangalib.me/") {
+		return nil, ErrNotValidUrl
+	}
 	m, err := s.repo.MangaCreate(m)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	return m, nil
@@ -57,7 +56,6 @@ func (s *NotifangaService) CreateManga(m *Manga) (*Manga, error) {
 func (s *NotifangaService) ListUserMangas(u User) ([]*Manga, error) {
 	m, err := s.repo.MangaList(u)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	return m, nil
@@ -67,7 +65,6 @@ func (s *NotifangaService) ListUserMangas(u User) ([]*Manga, error) {
 func (s *NotifangaService) ListMangaUsers(m Manga) ([]*User, error) {
 	u, err := s.repo.UserListByManga(m)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	return u, nil
@@ -77,7 +74,6 @@ func (s *NotifangaService) UpdateManga(m Manga) error {
 	if err := s.repo.UpdateManga(m); err != nil {
 		return err
 	}
-	log.Println("service update manga", m)
 	return nil
 }
 
@@ -101,7 +97,6 @@ func (s *NotifangaService) RemoveMangaFromUser(m *Manga, u *User) error {
 func (s *NotifangaService) GetAllMangas() ([]*Manga, error) {
 	uarr, err := s.repo.UserList()
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	var marr []*Manga
@@ -109,7 +104,6 @@ func (s *NotifangaService) GetAllMangas() ([]*Manga, error) {
 	for _, u := range uarr {
 		mList, err := s.repo.MangaList(*u)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 		for _, m := range mList {
@@ -121,8 +115,3 @@ func (s *NotifangaService) GetAllMangas() ([]*Manga, error) {
 	}
 	return marr, nil
 }
-
-// func extractChapter(s string) string {
-// 	ind := strings.Index(s, "#")
-// 	return s[ind:]
-// }
