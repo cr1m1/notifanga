@@ -47,11 +47,11 @@ func (r *notifangaRepository) UserList() ([]*User, error) {
 		FROM users;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err, "UserList")
 	}
 	var (
 		id       int
-		tgUserId string
+		tgUserId int64
 		users    []*User
 	)
 
@@ -103,7 +103,7 @@ func (r *notifangaRepository) MangaList(u User) ([]*Manga, error) {
 		WHERE user_id = $1;
 	`, u.ID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err, "MangaList")
 	}
 	var (
 		id                                      int
@@ -141,11 +141,11 @@ func (r *notifangaRepository) UserListByManga(m Manga) ([]*User, error) {
 		WHERE manga_id = $1;
 	`, m.ID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err, "UserListByManga")
 	}
 	var (
 		id       int
-		tgUserId string
+		tgUserId int64
 		uarr     []*User
 	)
 

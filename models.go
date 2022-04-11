@@ -2,7 +2,7 @@ package main
 
 type User struct {
 	ID             int
-	TelegramUserID string
+	TelegramUserID int64
 	Mangas         []int
 }
 
