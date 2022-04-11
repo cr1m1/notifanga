@@ -52,8 +52,8 @@ func main() {
 	}
 
 	m = &Manga{
-		Name:           CrawlName("https://mangalib.me/toukyou-revengers?section=info"),
-		Url:            "https://mangalib.me/toukyou-revengers?section=info",
+		Name:           CrawlName("https://mangalib.me/onepunchman?section=info"),
+		Url:            "https://mangalib.me/onepunchman?section=info",
 		LastChapter:    "",
 		LastChapterUrl: "",
 	}
@@ -67,35 +67,35 @@ func main() {
 	if err := service.AddMangaToUser(m, u); err != nil {
 		log.Println("cant add manga to user", err)
 	}
-	if err := service.RemoveMangaFromUser(m, u); err != nil {
-	}
+	// if err := service.RemoveMangaFromUser(m, u); err != nil {
+	// }
 
-	// user2
-	u = &User{
-		TelegramUserID: "telegram2",
-	}
-	u, err = service.CreateUser(u)
-	if err != nil {
-		log.Println("cant create a user", err)
-	}
-	log.Println("user was created", u)
+	// // user2
+	// u = &User{
+	// 	TelegramUserID: "telegram2",
+	// }
+	// u, err = service.CreateUser(u)
+	// if err != nil {
+	// 	log.Println("cant create a user", err)
+	// }
+	// log.Println("user was created", u)
 
-	m = &Manga{
-		Name:           CrawlName("https://mangalib.me/toukyou-revengers?section=info"),
-		Url:            "https://mangalib.me/toukyou-revengers?section=info",
-		LastChapter:    "",
-		LastChapterUrl: "",
-	}
-	log.Println("manga name", m.Name)
-	m, err = service.CreateManga(m)
-	if err != nil {
-		log.Println("cant create manga", err)
-	}
-	log.Println("manga was created", m)
+	// m = &Manga{
+	// 	Name:           CrawlName("https://mangalib.me/toukyou-revengers?section=info"),
+	// 	Url:            "https://mangalib.me/toukyou-revengers?section=info",
+	// 	LastChapter:    "",
+	// 	LastChapterUrl: "",
+	// }
+	// log.Println("manga name", m.Name)
+	// m, err = service.CreateManga(m)
+	// if err != nil {
+	// 	log.Println("cant create manga", err)
+	// }
+	// log.Println("manga was created", m)
 
-	if err := service.AddMangaToUser(m, u); err != nil {
-		log.Println("cant add manga to user", err)
-	}
+	// if err := service.AddMangaToUser(m, u); err != nil {
+	// 	log.Println("cant add manga to user", err)
+	// }
 
 	// for {
 	marr, err := service.GetAllMangas()
