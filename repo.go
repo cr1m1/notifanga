@@ -174,10 +174,24 @@ func (r *notifangaRepository) UpdateManga(m Manga) error {
 	return err
 }
 
+// this query adds manga to user's list, but doesn't allow it to be duplicated
 func (r *notifangaRepository) AddMangaToUser(m *Manga, u *User) error {
 	err := r.conn.QueryRow(`
-		INSERT INTO users_mangas (user_id, manga_id)
-		VALUES ($1, $2);
+		WITH s AS (
+    		SELECT manga_id
+    		FROM users_mangas
+    		WHERE manga_id = $2
+		), i AS (
+    		INSERT INTO users_mangas (user_id, manga_id)
+    		SELECT $1, $2
+    		WHERE NOT EXISTS (SELECT 1 FROM s)
+			RETURNING manga_id
+		)
+		SELECT manga_id
+		FROM i
+		UNION ALL
+		SELECT manga_id
+		FROM s;
 	`, u.ID, m.ID).Err()
 	return err
 }
