@@ -25,10 +25,7 @@ func main() {
 		log.Println("cannot create repository", err)
 	}
 	service := NewNotifangaService(repo)
-
-	go log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
-
 	go TelegramBotReplier(service)
 	TelegramBotCrawler(service)
-
+	go log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
