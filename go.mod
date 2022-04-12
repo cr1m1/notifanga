@@ -1,5 +1,6 @@
 module github.com/cr1m1/notifanga
 
+// +heroku goVersion go1.17
 go 1.17
 
 require (
