@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"reflect"
@@ -26,6 +27,7 @@ func (b *Bot) TelegramBotReplier(service *NotifangaService) {
 	updates := b.bot.ListenForWebhook("/" + b.bot.Token)
 	go http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	for u := range updates {
+		fmt.Println(u.Message.Text)
 		if u.Message == nil {
 			continue
 		}
