@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"log"
-	"net/http"
 	"os"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -25,7 +25,29 @@ func main() {
 		log.Println("cannot create repository", err)
 	}
 	service := NewNotifangaService(repo)
-	go TelegramBotReplier(service)
-	TelegramBotCrawler(service)
-	go log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
+	b, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
+	if err != nil {
+		panic(err)
+	}
+	wh, _ := tgbotapi.NewWebhook("https://notifanga-bot.herokuapp.com/" + b.Token)
+	_, err = b.Request(wh)
+	if err != nil {
+		log.Fatal(err)
+	}
+	info, err := b.GetWebhookInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if info.LastErrorDate != 0 {
+		log.Printf("Telegram callback failed: %s", info.LastErrorMessage)
+	}
+	bot := &Bot{
+		bot: b,
+	}
+
+	// go log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
+
+	go bot.TelegramBotReplier(service)
+	bot.TelegramBotCrawler(service)
+
 }
