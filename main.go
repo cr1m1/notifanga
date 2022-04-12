@@ -26,7 +26,7 @@ func main() {
 	}
 	service := NewNotifangaService(repo)
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(os.Getenv("PORT"), nil)
 
 	go TelegramBotReplier(service)
 	TelegramBotCrawler(service)
