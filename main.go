@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -24,6 +25,8 @@ func main() {
 		log.Println("cannot create repository", err)
 	}
 	service := NewNotifangaService(repo)
+
+	http.ListenAndServe(":8080", nil)
 
 	go TelegramBotReplier(service)
 	TelegramBotCrawler(service)
