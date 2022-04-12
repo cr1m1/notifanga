@@ -9,8 +9,10 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Println(err)
+	if len(os.Args) > 1 {
+		if err := godotenv.Load(os.Args[1]); err != nil {
+			log.Println(err)
+		}
 	}
 	dbconn, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
