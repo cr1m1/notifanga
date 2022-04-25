@@ -46,7 +46,7 @@ func Crawl(m Manga, service *NotifangaService) ([]*User, Manga) {
 
 				uarr, err = service.ListMangaUsers(m)
 				if err != nil {
-					// log.Println("cant use ListMangaUsers", err)
+					log.Println("cant use ListMangaUsers", err)
 				}
 			}
 		}
