@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -24,10 +25,11 @@ func main() {
 		log.Println("cannot create repository", err)
 	}
 	service := NewNotifangaService(repo)
-	b, err := NewBot("5293520621:AAGVDqFJ16Ox19hP42Ks8RAj9lErUnfL_NY", service)
+	b, err := NewBot(os.Getenv("TOKEN"), service)
 	if err != nil {
 		log.Println("cannot create bot")
 	}
 	b.Start()
+	go log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 	b.CrawlerBot()
 }
