@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Println("cannot create bot")
 	}
-	b.Start()
 	go http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	b.Start()
 	b.CrawlerBot()
 }
