@@ -30,6 +30,6 @@ func main() {
 		log.Println("cannot create bot")
 	}
 	b.Start()
-	go log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
+	go http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	b.CrawlerBot()
 }
