@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -13,6 +14,7 @@ const (
 
 func (b *Bot) StartBot() telebot.HandlerFunc {
 	return func(ctx telebot.Context) error {
+		fmt.Println("start")
 		user := &User{
 			TelegramUserID: ctx.Chat().ID,
 		}
@@ -27,6 +29,7 @@ func (b *Bot) StartBot() telebot.HandlerFunc {
 
 func (b *Bot) List() telebot.HandlerFunc {
 	return func(ctx telebot.Context) error {
+		fmt.Println("list")
 		user := &User{
 			TelegramUserID: ctx.Chat().ID,
 		}
@@ -48,6 +51,7 @@ func (b *Bot) List() telebot.HandlerFunc {
 
 func (b *Bot) Remove() telebot.HandlerFunc {
 	return func(ctx telebot.Context) error {
+		fmt.Println("remove")
 		if len(ctx.Args()) == 0 {
 			return ctx.Send("Укажите номера манг, которые хотите убрать из списка.")
 		}
@@ -94,6 +98,7 @@ func (b *Bot) Remove() telebot.HandlerFunc {
 
 func (b *Bot) Add() telebot.HandlerFunc {
 	return func(ctx telebot.Context) error {
+		fmt.Println("add")
 		link := ctx.Text()
 		if !strings.Contains(link, "mangalib.me") {
 			return ctx.Send("Неправильная ссылка.")
