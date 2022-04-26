@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
+	"os/signal"
 
 	"github.com/joho/godotenv"
 )
@@ -14,7 +16,7 @@ func main() {
 			log.Println(err)
 		}
 	}
-	dbconn, err := sql.Open("postgres", "postgres://postgres:postgres@localhost:5432/notifanga?sslmode=disable")
+	dbconn, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal("cannot get connection with db", err)
 	}
@@ -24,11 +26,19 @@ func main() {
 		log.Fatal("cannot create repository", err)
 	}
 	service := NewNotifangaService(repo)
-	b, err := NewBot("5395533657:AAHt8UeoVmtpSE5yb0MdL32WewlXyn67Vv4", service)
+	b, err := NewBot(os.Getenv("TOKEN"), service)
 	if err != nil {
 		log.Fatal("cannot create bot")
 	}
-	// go log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
-	go b.Start()
-	b.CrawlerBot()
+	go func() {
+		b.Start()
+		defer b.Stop()
+	}()
+	go b.CrawlerBot()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+
+	fmt.Println("Gracefully closed")
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -41,7 +42,7 @@ func NewBot(t string, s *NotifangaService) (*Bot, error) {
 		service: s,
 		token:   t,
 	}
-	b.SetCommands()
+	bot.SetCommands()
 	return bot, nil
 }
 
@@ -68,17 +69,19 @@ func (b *Bot) CrawlerBot() {
 			uarr, m := Crawl(*m, b.service)
 			for _, u := range uarr {
 				r := NewRecipient(strconv.Itoa(int(u.TelegramUserID)))
+				fmt.Println(r.Recipient())
 				b.bot.Send(
 					r,
-					"Вышла новая ",
+					"Вышла новая "+m.LastChapter+" глава манги "+m.Name+"!\nЧитать тут -"+m.LastChapterUrl,
+				)
+				fmt.Println("Вышла новая ",
 					m.LastChapter,
 					" глава манги ",
 					m.Name,
 					"!\nЧитать тут - ",
-					m.LastChapterUrl,
-				)
+					m.LastChapterUrl)
 			}
 		}
-		time.Sleep(time.Minute * 5)
+		time.Sleep(time.Minute * 1)
 	}
 }
