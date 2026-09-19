@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -59,27 +59,38 @@ func (b *Bot) SetCommands() {
 	b.bot.Handle("/start", b.StartBot())
 	b.bot.Handle("/list", b.List())
 	b.bot.Handle("/remove", b.Remove())
+	b.bot.Handle("/unread", b.Unread())
+	b.bot.Handle("/read", b.Read())
+	if err := b.bot.SetCommands([]tele.Command{
+		{Text: "list", Description: "Вся отслеживаемая манга"},
+		{Text: "unread", Description: "Манга с непрочитанными главами"},
+		{Text: "read", Description: "Отметить прочитанной: /read (id)"},
+		{Text: "remove", Description: "Удалить из списка: /remove (id)"},
+	}); err != nil {
+		log.Println("cannot set bot commands:", err)
+	}
+}
+
+// NewChapterMessage builds the text sent to a subscriber when a new chapter is detected.
+func NewChapterMessage(m Manga) string {
+	return "Вышла новая " + m.LastChapter + " глава манги " + m.Name + "!\nЧитать тут - " + m.LastChapterUrl +
+		"\nПрочитал? Отметь: /read (id), номер смотри в /list"
 }
 
 func (b *Bot) CrawlerBot() {
 	for {
-		marr, _ := b.service.GetAllMangas()
+		marr, err := b.service.GetAllMangas()
+		if err != nil {
+			log.Println("cannot list mangas:", err)
+		}
 
 		for _, m := range marr {
 			uarr, m := Crawl(*m, b.service)
 			for _, u := range uarr {
-				r := NewRecipient(strconv.Itoa(int(u.TelegramUserID)))
-				fmt.Println(r.Recipient())
-				b.bot.Send(
-					r,
-					"Вышла новая "+m.LastChapter+" глава манги "+m.Name+"!\nЧитать тут -"+m.LastChapterUrl,
-				)
-				fmt.Println("Вышла новая ",
-					m.LastChapter,
-					" глава манги ",
-					m.Name,
-					"!\nЧитать тут - ",
-					m.LastChapterUrl)
+				r := NewRecipient(strconv.FormatInt(u.TelegramUserID, 10))
+				if _, err := b.bot.Send(r, NewChapterMessage(m)); err != nil {
+					log.Println("cannot notify", r.Recipient(), err)
+				}
 			}
 		}
 		time.Sleep(time.Minute * 1)

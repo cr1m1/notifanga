@@ -1,7 +1,7 @@
 POSTGRESQL_URL='postgres://postgres:postgres@localhost:5432/notifanga?sslmode=disable'
 
 dev:
-	go run cmd/apiserver/main.go .dev.env
+	go run . .dev.env
 
 build:
 

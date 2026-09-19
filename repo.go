@@ -100,11 +100,13 @@ func (r *notifangaRepository) MangaList(u User) ([]*Manga, error) {
 		FROM users_mangas
 		INNER JOIN mangas
 			ON manga_id = id
-		WHERE user_id = $1;
+		WHERE user_id = $1
+		ORDER BY id;
 	`, u.ID)
 	if err != nil {
 		log.Fatal(err, "MangaList")
 	}
+	defer rows.Close()
 	var (
 		id                                      int
 		name, link, lastChapter, lastChapterUrl string
@@ -130,6 +132,59 @@ func (r *notifangaRepository) MangaList(u User) ([]*Manga, error) {
 		})
 	}
 	return marr, err
+}
+
+func (r *notifangaRepository) SubscriptionList(u User) ([]*Subscription, error) {
+	rows, err := r.conn.Query(`
+		SELECT id, name, link, COALESCE(last_chapter, ''), COALESCE(last_chapter_url, ''), last_read_chapter
+		FROM users_mangas
+		INNER JOIN mangas
+			ON manga_id = id
+		WHERE user_id = $1
+		ORDER BY id;
+	`, u.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var subs []*Subscription
+	for rows.Next() {
+		var (
+			id                                                       int
+			name, link, lastChapter, lastChapterUrl, lastReadChapter string
+		)
+		if err := rows.Scan(
+			&id,
+			&name,
+			&link,
+			&lastChapter,
+			&lastChapterUrl,
+			&lastReadChapter,
+		); err != nil {
+			return nil, err
+		}
+		subs = append(subs, &Subscription{
+			Manga: Manga{
+				ID:             id,
+				Name:           name,
+				Url:            link,
+				LastChapter:    lastChapter,
+				LastChapterUrl: lastChapterUrl,
+			},
+			LastReadChapter: lastReadChapter,
+		})
+	}
+	return subs, rows.Err()
+}
+
+func (r *notifangaRepository) MarkRead(m *Manga, u *User, chapter string) error {
+	_, err := r.conn.Exec(`
+		UPDATE users_mangas
+		SET last_read_chapter = $1
+		WHERE user_id = $2
+		AND manga_id = $3;
+	`, chapter, u.ID, m.ID)
+	return err
 }
 
 func (r *notifangaRepository) UserListByManga(m Manga) ([]*User, error) {
@@ -180,7 +235,7 @@ func (r *notifangaRepository) AddMangaToUser(m *Manga, u *User) error {
 		WITH s AS (
     		SELECT manga_id
     		FROM users_mangas
-    		WHERE manga_id = $2
+    		WHERE manga_id = $2 AND user_id = $1
 		), i AS (
     		INSERT INTO users_mangas (user_id, manga_id)
     		SELECT $1, $2
